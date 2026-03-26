@@ -95,3 +95,76 @@ By the end of this lab, you should be able to say:
 ### Optional
 
 1. [Flutter Web Chatbot](./lab/tasks/optional/task-1.md)
+
+## Deploy
+
+### Prerequisites
+
+Ensure you have the following configured in `.env.docker.secret`:
+
+- `BOT_TOKEN` — Telegram bot token from @BotFather
+- `LMS_API_KEY` — LMS backend API key
+- `LLM_API_KEY` — LLM API key for intent routing
+- `LLM_API_BASE_URL` — LLM API base URL (e.g., `http://localhost:42005/v1`)
+
+### Deploy with Docker Compose
+
+```bash
+# Navigate to project root
+cd ~/se-toolkit-lab-7
+
+# Stop any running bot process (if using nohup)
+pkill -f "bot.py" 2>/dev/null || true
+
+# Build and start all services including the bot
+docker compose --env-file .env.docker.secret up --build -d
+
+# Check all services are running
+docker compose --env-file .env.docker.secret ps
+```
+
+You should see the `bot` service running alongside `backend`, `postgres`, `caddy`, and `pgadmin`.
+
+### Verify the bot is healthy
+
+```bash
+# Check bot container status
+docker compose --env-file .env.docker.secret ps bot
+
+# View bot logs for startup errors
+docker compose --env-file .env.docker.secret logs bot --tail 20
+```
+
+**Expected log output:**
+- "Application started" — bot connected to Telegram
+- "HTTP Request: POST .../getUpdates" — bot is polling for messages
+- No Python tracebacks
+
+### Test in Telegram
+
+Send these commands to your bot in Telegram:
+
+1. `/start` — should return welcome message
+2. `/health` — should show backend status
+3. `/labs` — should list available labs
+4. "what labs are available?" — natural language query
+5. "which lab has the lowest pass rate?" — multi-step reasoning
+
+### Troubleshooting
+
+| Symptom | Solution |
+|---------|----------|
+| Bot container restarting | Check logs: `docker compose logs bot` |
+| `/health` fails | Ensure `LMS_API_BASE_URL=http://backend:8000` in docker-compose.yml |
+| LLM queries fail | Check `LLM_API_BASE_URL` — may need `host.docker.internal` |
+| "BOT_TOKEN is required" | Add `BOT_TOKEN` to `.env.docker.secret` |
+
+### Update deployment
+
+```bash
+# Pull latest changes
+git pull
+
+# Rebuild and restart bot
+docker compose --env-file .env.docker.secret up --build -d bot
+```
