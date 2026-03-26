@@ -9,7 +9,13 @@ from services.lms_api import get_lms_client
 
 def handle_start() -> str:
     """Handle /start command — returns a welcome message."""
-    return "Welcome to the LMS Bot! I can help you check system health, browse labs, and view scores. Use /help to see all available commands."
+    return """Welcome to the LMS Bot! 
+
+I can help you check system health, browse labs, and view scores. You can:
+• Use slash commands like /help, /health, /labs, /scores
+• Or just ask me questions like "which lab has the lowest pass rate?"
+
+Use /help to see all available commands."""
 
 
 def handle_help() -> str:
@@ -19,7 +25,15 @@ def handle_help() -> str:
 /help — Show this help message
 /health — Check backend status
 /labs — List available labs
-/scores <lab> — View scores for a specific lab"""
+/scores <lab> — View scores for a specific lab
+
+You can also ask questions in plain English:
+• "what labs are available?"
+• "show me scores for lab 4"
+• "which lab has the lowest pass rate?"
+• "who are the top 5 students?"
+• "how many students are enrolled?"
+"""
 
 
 def handle_health() -> str:
