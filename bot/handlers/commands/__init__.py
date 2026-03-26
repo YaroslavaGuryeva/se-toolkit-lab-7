@@ -4,6 +4,7 @@ Handlers are plain functions that take command input and return text.
 They have no dependency on Telegram — same function works from --test,
 unit tests, or the Telegram bot.
 """
+from services.lms_api import get_lms_client
 
 
 def handle_start() -> str:
@@ -23,14 +24,41 @@ def handle_help() -> str:
 
 def handle_health() -> str:
     """Handle /health command — checks backend status."""
-    # TODO: Task 2 — actually call the backend
-    return "Backend status: OK (placeholder)"
+    client = get_lms_client()
+    result = client.get_items()
+    
+    if isinstance(result, tuple):
+        # Error occurred
+        _, error_msg = result
+        return f"Backend error: {error_msg}"
+    
+    # Success - result is a list of items
+    item_count = len(result)
+    return f"Backend is healthy. {item_count} items available."
 
 
 def handle_labs() -> str:
     """Handle /labs command — lists available labs."""
-    # TODO: Task 2 — fetch from backend
-    return "Available labs: (placeholder)"
+    client = get_lms_client()
+    result = client.get_items()
+    
+    if isinstance(result, tuple):
+        # Error occurred
+        _, error_msg = result
+        return f"Backend error: {error_msg}"
+    
+    # Filter for labs only (not tasks)
+    labs = [item for item in result if item.get('type') == 'lab']
+    
+    if not labs:
+        return "No labs available."
+    
+    lines = ["Available labs:"]
+    for lab in labs:
+        title = lab.get('title', 'Unknown')
+        lines.append(f"- {title}")
+    
+    return "\n".join(lines)
 
 
 def handle_scores(lab_id: str = "") -> str:
@@ -39,7 +67,30 @@ def handle_scores(lab_id: str = "") -> str:
     Args:
         lab_id: The lab identifier (e.g., 'lab-04')
     """
-    # TODO: Task 2 — fetch from backend
     if not lab_id:
         return "Please specify a lab, e.g., /scores lab-04"
-    return f"Scores for {lab_id}: (placeholder)"
+    
+    client = get_lms_client()
+    result = client.get_pass_rates(lab_id)
+    
+    if isinstance(result, tuple):
+        # Error occurred
+        _, error_msg = result
+        return f"Backend error: {error_msg}"
+    
+    # result is a list of dicts with task, avg_score, attempts
+    if not result:
+        return f"No pass rate data available for {lab_id}."
+    
+    # Format lab ID for display (lab-04 -> Lab 04)
+    lab_display = lab_id.replace('lab-', 'Lab ').title()
+    
+    lines = [f"Pass rates for {lab_display}:"]
+    
+    for item in result:
+        task_name = item.get('task', 'Unknown task')
+        avg_score = item.get('avg_score', 0)
+        attempts = item.get('attempts', 0)
+        lines.append(f"- {task_name}: {avg_score:.1f}% ({attempts} attempts)")
+    
+    return "\n".join(lines)
