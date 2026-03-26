@@ -45,3 +45,7 @@ def get_settings() -> BotSettings:
     if _settings is None:
         _settings = BotSettings()
     return _settings
+
+
+# Module-level settings instance for direct import
+settings = get_settings()
