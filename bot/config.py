@@ -2,14 +2,21 @@
 
 Loads secrets from .env.bot.secret using pydantic-settings.
 """
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Project root is parent of bot directory
+BOT_DIR = Path(__file__).parent
+PROJECT_ROOT = BOT_DIR.parent
+ENV_FILE = PROJECT_ROOT / ".env.bot.secret"
 
 
 class BotSettings(BaseSettings):
     """Bot configuration loaded from environment variables."""
 
     model_config = SettingsConfigDict(
-        env_file=".env.bot.secret",
+        env_file=str(ENV_FILE),
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
