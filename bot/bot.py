@@ -19,6 +19,7 @@ from handlers import (
     handle_labs,
     handle_scores,
 )
+from handlers.intent_router import route as route_intent
 
 
 def parse_command(text: str) -> tuple[str, str]:
@@ -40,14 +41,18 @@ def parse_command(text: str) -> tuple[str, str]:
 
 def run_command(command: str, args: str) -> str:
     """Run a command handler and return the response.
-    
+
     Args:
         command: Command name without '/' (e.g., 'start', 'help')
         args: Command arguments (if any)
-    
+
     Returns:
         Response text from the handler
     """
+    # If no command but has text, route through LLM
+    if not command and args:
+        return route_intent(args)
+    
     handlers = {
         'start': lambda: handle_start(),
         'help': lambda: handle_help(),
@@ -55,11 +60,11 @@ def run_command(command: str, args: str) -> str:
         'labs': lambda: handle_labs(),
         'scores': lambda: handle_scores(args),
     }
-    
+
     handler = handlers.get(command)
     if handler is None:
         return f"Unknown command: /{command}. Use /help to see available commands."
-    
+
     return handler()
 
 

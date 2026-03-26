@@ -1,0 +1,3 @@
+nohup: ignoring input
+Telegram bot startup not yet implemented.
+Run with --test to test handlers offline.

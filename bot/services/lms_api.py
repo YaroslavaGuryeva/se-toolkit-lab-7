@@ -50,16 +50,158 @@ class LMSAPIClient:
     
     def get_pass_rates(self, lab: str) -> dict | tuple[bool, str]:
         """GET /analytics/pass-rates?lab=<lab> — returns per-task pass rates.
-        
+
         Args:
             lab: The lab identifier (e.g., 'lab-04')
-            
+
         Returns:
             dict with pass rates on success, or (False, error_message) on failure.
         """
         try:
             client = self._get_client()
             response = client.get("/analytics/pass-rates", params={"lab": lab})
+            response.raise_for_status()
+            return response.json()
+        except httpx.ConnectError as e:
+            return (False, f"connection refused ({self.base_url}). Check that the services are running.")
+        except httpx.HTTPStatusError as e:
+            return (False, f"HTTP {e.response.status_code} {e.response.reason_phrase}. The backend service may be down.")
+        except httpx.HTTPError as e:
+            return (False, f"HTTP error: {str(e)}")
+
+    def get_learners(self) -> list | tuple[bool, str]:
+        """GET /learners/ — returns enrolled students.
+
+        Returns:
+            list of learners on success, or (False, error_message) on failure.
+        """
+        try:
+            client = self._get_client()
+            response = client.get("/learners/")
+            response.raise_for_status()
+            return response.json()
+        except httpx.ConnectError as e:
+            return (False, f"connection refused ({self.base_url}). Check that the services are running.")
+        except httpx.HTTPStatusError as e:
+            return (False, f"HTTP {e.response.status_code} {e.response.reason_phrase}. The backend service may be down.")
+        except httpx.HTTPError as e:
+            return (False, f"HTTP error: {str(e)}")
+
+    def get_scores(self, lab: str) -> dict | tuple[bool, str]:
+        """GET /analytics/scores?lab=<lab> — returns score distribution (4 buckets).
+
+        Args:
+            lab: The lab identifier
+
+        Returns:
+            dict with score distribution on success, or (False, error_message) on failure.
+        """
+        try:
+            client = self._get_client()
+            response = client.get("/analytics/scores", params={"lab": lab})
+            response.raise_for_status()
+            return response.json()
+        except httpx.ConnectError as e:
+            return (False, f"connection refused ({self.base_url}). Check that the services are running.")
+        except httpx.HTTPStatusError as e:
+            return (False, f"HTTP {e.response.status_code} {e.response.reason_phrase}. The backend service may be down.")
+        except httpx.HTTPError as e:
+            return (False, f"HTTP error: {str(e)}")
+
+    def get_timeline(self, lab: str) -> dict | tuple[bool, str]:
+        """GET /analytics/timeline?lab=<lab> — returns submissions per day.
+
+        Args:
+            lab: The lab identifier
+
+        Returns:
+            dict with timeline data on success, or (False, error_message) on failure.
+        """
+        try:
+            client = self._get_client()
+            response = client.get("/analytics/timeline", params={"lab": lab})
+            response.raise_for_status()
+            return response.json()
+        except httpx.ConnectError as e:
+            return (False, f"connection refused ({self.base_url}). Check that the services are running.")
+        except httpx.HTTPStatusError as e:
+            return (False, f"HTTP {e.response.status_code} {e.response.reason_phrase}. The backend service may be down.")
+        except httpx.HTTPError as e:
+            return (False, f"HTTP error: {str(e)}")
+
+    def get_groups(self, lab: str) -> dict | tuple[bool, str]:
+        """GET /analytics/groups?lab=<lab> — returns per-group performance.
+
+        Args:
+            lab: The lab identifier
+
+        Returns:
+            dict with group data on success, or (False, error_message) on failure.
+        """
+        try:
+            client = self._get_client()
+            response = client.get("/analytics/groups", params={"lab": lab})
+            response.raise_for_status()
+            return response.json()
+        except httpx.ConnectError as e:
+            return (False, f"connection refused ({self.base_url}). Check that the services are running.")
+        except httpx.HTTPStatusError as e:
+            return (False, f"HTTP {e.response.status_code} {e.response.reason_phrase}. The backend service may be down.")
+        except httpx.HTTPError as e:
+            return (False, f"HTTP error: {str(e)}")
+
+    def get_top_learners(self, lab: str, limit: int = 5) -> dict | tuple[bool, str]:
+        """GET /analytics/top-learners?lab=<lab>&limit=<n> — returns top N learners.
+
+        Args:
+            lab: The lab identifier
+            limit: Number of top learners to return (default: 5)
+
+        Returns:
+            dict with top learners on success, or (False, error_message) on failure.
+        """
+        try:
+            client = self._get_client()
+            response = client.get("/analytics/top-learners", params={"lab": lab, "limit": limit})
+            response.raise_for_status()
+            return response.json()
+        except httpx.ConnectError as e:
+            return (False, f"connection refused ({self.base_url}). Check that the services are running.")
+        except httpx.HTTPStatusError as e:
+            return (False, f"HTTP {e.response.status_code} {e.response.reason_phrase}. The backend service may be down.")
+        except httpx.HTTPError as e:
+            return (False, f"HTTP error: {str(e)}")
+
+    def get_completion_rate(self, lab: str) -> dict | tuple[bool, str]:
+        """GET /analytics/completion-rate?lab=<lab> — returns completion percentage.
+
+        Args:
+            lab: The lab identifier
+
+        Returns:
+            dict with completion rate on success, or (False, error_message) on failure.
+        """
+        try:
+            client = self._get_client()
+            response = client.get("/analytics/completion-rate", params={"lab": lab})
+            response.raise_for_status()
+            return response.json()
+        except httpx.ConnectError as e:
+            return (False, f"connection refused ({self.base_url}). Check that the services are running.")
+        except httpx.HTTPStatusError as e:
+            return (False, f"HTTP {e.response.status_code} {e.response.reason_phrase}. The backend service may be down.")
+        except httpx.HTTPError as e:
+            return (False, f"HTTP error: {str(e)}")
+
+    def trigger_sync(self) -> dict | tuple[bool, str]:
+        """POST /pipeline/sync — triggers ETL sync.
+
+        Returns:
+            dict with sync result on success, or (False, error_message) on failure.
+        """
+        try:
+            client = self._get_client()
+            response = client.post("/pipeline/sync", json={})
             response.raise_for_status()
             return response.json()
         except httpx.ConnectError as e:
